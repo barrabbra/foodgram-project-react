@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Foodgram</title>
+    <style>
+        @font-face { font-family: Arial; src: url(static/fonts/arial.ttf); }
+        body{
+          font-family: Arial, sans-serif;
+        }
+        ol {
+        list-style-type: decimal-leading-zero;
+        }
+    </style>
+</head>
+<body>
+    <ol>
+        {% for ingredient in context %}
+            <li style="font-size: 1.5">
+            {{ingredient.recipes__ingredients__ingredient__name}} - {{ingredient.total}} {{ingredient.recipes__ingredients__ingredient__measurement_unit}}
+            </li>
+        {% endfor %}
+    </ol>
+</body>
+</html>
