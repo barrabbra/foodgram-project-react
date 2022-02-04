@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializer
-
 from .models import Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
 
 
@@ -97,23 +96,17 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         user = self.get_user()
-        try:
-            return (
-                user.shopping_cart.recipes.filter(pk__in=(obj.pk,)).exists()
-                and user.is_authenticated
-            )
-        except ShoppingCart.DoesNotExist:
-            return False
+        return (
+            user.favorites.favorite.filter(pk__in=(obj.pk,)).exists()
+            and user.is_authenticated
+        )
 
     def get_is_in_shopping_cart(self, obj):
         user = self.get_user()
-        try:
-            return (
-                user.shopping_cart.recipes.filter(pk__in=(obj.pk,)).exists()
-                and user.is_authenticated
-            )
-        except ShoppingCart.DoesNotExist:
-            return False
+        return (
+            user.shopping_cart.recipes.filter(pk__in=(obj.pk,)).exists()
+            and user.is_authenticated
+        )
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):

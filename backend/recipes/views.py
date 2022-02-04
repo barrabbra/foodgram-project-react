@@ -15,7 +15,6 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
 from foodgram.paginations import LimitPageSizePagination
 from users.permissions import IsAdminOrAuthorOrReadOnly
 from users.serializers import LiteRecipeSerializer
-
 from .filters import IngredientSearchFilter, RecipeFilter
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .pdfrender import render_pdf_view
@@ -49,34 +48,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        serializer = RecipeSerializer(
-            instance=serializer.instance,
-            context={'request': self.request}
-        )
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=HTTP_201_CREATED, headers=headers
-        )
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        serializer = RecipeSerializer(
-            instance=serializer.instance,
-            context={'request': self.request},
-        )
-        return Response(
-            serializer.data, status=HTTP_200_OK
         )
 
     def add_to_favorite(self, request, recipe):
@@ -125,7 +99,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def download_shopping_cart(self, request):
         try:
-            shopping_cart = ShoppingCart.objects.filter(user=request.user)
+            shopping_cart = ShoppingCart.objects.get(user=request.user)
         except ShoppingCart.DoesNotExist:
             return Response(
                 {'errors': 'Данные о корзине не найдены'},

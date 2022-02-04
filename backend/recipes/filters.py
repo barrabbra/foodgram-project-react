@@ -21,9 +21,10 @@ class RecipeFilter(FilterSet):
         if not value:
             return queryset
         favorites = self.request.user.favorites.all()
-        return queryset.filter(
-            pk__in=(favorite.favorite.pk for favorite in favorites)
-        )
+        return queryset.filter(pk__in=(favorites.objects.values_list(
+            'id',
+            flat=True,
+        )))
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if not value:
@@ -32,11 +33,10 @@ class RecipeFilter(FilterSet):
             recipes = (
                 self.request.user.shopping_cart.recipes.all()
             )
-        except ShoppingCart.DoesNotExist:
+        except ShoppingCart.FieldDoesNotExist:
             return queryset
         return queryset.filter(
-            pk__in=(recipe.pk for recipe in recipes)
-        )
+            pk__in=(recipes.objects.values_list('id', flat=True)))
 
 
 class IngredientSearchFilter(FilterSet):
@@ -56,9 +56,7 @@ class IngredientSearchFilter(FilterSet):
         )
         contain_queryset = (
             queryset.filter(name__icontains=value).exclude(
-                pk__in=(ingredient.pk for ingredient in start_with_queryset)
-            ).annotate(
-                order=Value(1, IntegerField())
-            )
+                pk__in=(start_with_queryset.values_list('id', flat=True))
+                    ).annotate(order=Value(1, IntegerField()))
         )
         return start_with_queryset.union(contain_queryset).order_by('order')
