@@ -12,16 +12,17 @@ from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
 
 from foodgram.paginations import LimitPageSizePagination
+from recipes.constants import (FAVORITE_ADD_ERROR, FAVORITE_DELETE_ERROR,
+                               SHOPPING_CART_ADD_ERROR,
+                               SHOPPING_CART_DELETE_ERROR,
+                               SHOPPING_CART_GET_ERROR)
+from recipes.filters import IngredientSearchFilter, RecipeFilter
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.pdfrender import render_pdf_view
+from recipes.serializers import (CreateRecipeSerializer, IngredientSerializer,
+                                 RecipeSerializer, TagSerializer)
 from users.permissions import IsAdminOrAuthorOrReadOnly
 from users.serializers import LiteRecipeSerializer
-from .constants import (FAVORITE_ADD_ERROR, FAVORITE_DELETE_ERROR,
-                        SHOPPING_CART_ADD_ERROR, SHOPPING_CART_DELETE_ERROR,
-                        SHOPPING_CART_GET_ERROR)
-from .filters import IngredientSearchFilter, RecipeFilter
-from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from .pdfrender import render_pdf_view
-from .serializers import (CreateRecipeSerializer, IngredientSerializer,
-                          RecipeSerializer, TagSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from recipes.models import Recipe
-from .models import Subscription
+from users.models import Subscription
 
 User = get_user_model()
 

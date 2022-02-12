@@ -8,8 +8,8 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
                                    HTTP_404_NOT_FOUND)
 
 from foodgram.paginations import LimitPageSizePagination
-from .models import Subscription, User
-from .serializers import SubscriptionSerializer
+from users.models import Subscription, User
+from users.serializers import SubscriptionSerializer
 
 
 class SubscriptionViewSet(UserViewSet):
