@@ -52,26 +52,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def add_to(self, recipe, model, error):
-        if model.recipes.filter(pk__in=(recipe.pk,)).exists():
+    def add_to(self, request, pk, model, error):
+        model_object = model.objects.get_or_create(user=request.user)[0]
+        if model_object.recipes.filter(pk__in=pk).exists():
             return Response(
                 {'errors': error},
                 status=HTTP_400_BAD_REQUEST,
             )
-        model.recipes.add(recipe)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        model_object.recipes.add(recipe)
         serializer = LiteRecipeSerializer(recipe)
         return Response(
             serializer.data,
             status=HTTP_201_CREATED,
         )
 
-    def delete_from(self, recipe, model, error):
-        if not model.recipes.filter(pk__in=(recipe.pk,)).exists():
+    def delete_from(self, request, pk, model, error):
+        try:
+            model_object = model.objects.get(user=request.user)
+        except model.DoesNotExist:
             return Response(
                 {'errors': error},
                 status=HTTP_400_BAD_REQUEST,
             )
-        model.recipes.remove(recipe)
+        if not model_object.recipes.filter(pk__in=pk).exists():
+            return Response(
+                {'errors': error},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        recipe = get_object_or_404(Recipe, pk=pk)
+        model_object.recipes.remove(recipe)
         return Response(
             status=HTTP_204_NO_CONTENT,
         )
@@ -82,19 +92,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        favorite = (
-            Favorite.objects.get_or_create(user=request.user)[0]
-        )
         if request.method == 'POST':
             return self.add_to(
-                recipe=recipe,
-                model=favorite,
+                request=request,
+                pk=pk,
+                model=Favorite,
                 error=FAVORITE_ADD_ERROR,
             )
         return self.delete_from(
-            recipe=recipe,
-            model=favorite,
+            request=request,
+            pk=pk,
+            model=Favorite,
             error=FAVORITE_DELETE_ERROR,
         )
 
@@ -128,18 +136,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def shopping_cart(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        shopping_cart = (
-            ShoppingCart.objects.get_or_create(user=request.user)[0]
-        )
         if request.method == 'POST':
             return self.add_to(
-                recipe=recipe,
-                model=shopping_cart,
+                request=request,
+                pk=pk,
+                model=ShoppingCart,
                 error=SHOPPING_CART_ADD_ERROR,
             )
         return self.delete_from(
-            recipe=recipe,
-            model=shopping_cart,
+            request=request,
+            pk=pk,
+            model=ShoppingCart,
             error=SHOPPING_CART_DELETE_ERROR,
         )
