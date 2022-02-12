@@ -4,16 +4,49 @@
     <meta charset="UTF-8">
     <title>Foodgram</title>
     <style>
+        @page {
+            size: a4 portrait;
+            @frame header_frame {           /* Static Frame */
+                -pdf-frame-content: header_content;
+                left: 50pt; width: 512pt; top: 50pt; height: 40pt;
+            }
+            @frame content_frame {          /* Content Frame */
+                left: 50pt; width: 512pt; top: 92pt; height: 632pt;
+            }
+            @frame footer_frame {           /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 50pt; width: 512pt; top: 772pt; height: 20pt;
+            }
+        }
         @font-face { font-family: Arial; src: url(static/fonts/arial.ttf); }
         body{
-          font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif;
         }
         ol {
-        list-style-type: decimal-leading-zero;
+            list-style-type: decimal-leading-zero;
+        }
+        h2{
+            font-size: 24pt;
+        }
+        .bottom {
+            border-bottom-style: solid;
+            border-bottom-width: 2px;
+            border-bottom-color: black;
         }
     </style>
 </head>
 <body>
+    <!-- Content for Static Frame 'header_frame' -->
+    <div id="header_content" class="bottom">
+        <h2>Foodgram</h2>
+    </div>
+
+    <!-- Content for Static Frame 'footer_frame' -->
+    <div id="footer_content">страница <pdf:pagenumber>
+        из <pdf:pagecount>
+    </div>
+
+    <!-- HTML Content -->
     <ol>
         {% for ingredient in context %}
             <li style="font-size: 1.5">

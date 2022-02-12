@@ -1,13 +1,17 @@
 from django.db.models import IntegerField, Value
-from django_filters.rest_framework import (AllValuesMultipleFilter,
-                                           BooleanFilter, CharFilter,
-                                           FilterSet)
+from django_filters.rest_framework import (BooleanFilter, CharFilter,
+                                           FilterSet,
+                                           ModelMultipleChoiceFilter)
 
-from .models import Ingredient, Recipe, ShoppingCart
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class RecipeFilter(FilterSet):
-    tags = AllValuesMultipleFilter(field_name='tags__slug')
+    tags = ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all(),
+    )
     is_favorited = BooleanFilter(method='get_is_favorited')
     is_in_shopping_cart = BooleanFilter(method='get_is_in_shopping_cart')
 
@@ -20,23 +24,26 @@ class RecipeFilter(FilterSet):
     def get_is_favorited(self, queryset, name, value):
         if not value:
             return queryset
-        favorites = self.request.user.favorites.all()
-        return queryset.filter(pk__in=(favorites.objects.values_list(
-            'id',
-            flat=True,
-        )))
+        if not self.request.user.is_authenticated:
+            return queryset
+        if not Favorite.objects.filter(user=self.request.user).exists():
+            return queryset
+        recipes = self.request.user.favorites.recipes.all()
+        return queryset.filter(
+            pk__in=(recipes.values_list('id', flat=True,))
+        )
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if not value:
             return queryset
-        try:
-            recipes = (
-                self.request.user.shopping_cart.recipes.all()
-            )
-        except ShoppingCart.FieldDoesNotExist:
+        if not self.request.user.is_authenticated:
             return queryset
+        if not ShoppingCart.objects.filter(user=self.request.user).exists():
+            return queryset
+        recipes = self.request.user.shopping_cart.recipes.all()
         return queryset.filter(
-            pk__in=(recipes.objects.values_list('id', flat=True)))
+            pk__in=(recipes.values_list('id', flat=True))
+        )
 
 
 class IngredientSearchFilter(FilterSet):
@@ -57,6 +64,6 @@ class IngredientSearchFilter(FilterSet):
         contain_queryset = (
             queryset.filter(name__icontains=value).exclude(
                 pk__in=(start_with_queryset.values_list('id', flat=True))
-                    ).annotate(order=Value(1, IntegerField()))
+            ).annotate(order=Value(1, IntegerField()))
         )
         return start_with_queryset.union(contain_queryset).order_by('order')

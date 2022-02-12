@@ -1,0 +1,5 @@
+FAVORITE_ADD_ERROR = 'Вы уже добавили рецепт в избранное'
+FAVORITE_DELETE_ERROR = 'В избранном нет этого рецепта'
+SHOPPING_CART_GET_ERROR = 'Данные о корзине не найдены'
+SHOPPING_CART_ADD_ERROR = 'Вы уже добавили рецепт в корзину'
+SHOPPING_CART_DELETE_ERROR = 'В корзине нет этого рецепта'

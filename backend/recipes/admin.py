@@ -58,8 +58,8 @@ class CountOfIngredientAdmin(ModelAdmin):
 
 @register(Favorite)
 class FavoriteAdmin(ModelAdmin):
-    list_display = ('user', 'favorite',)
-    list_filter = ('user', 'favorite',)
+    list_display = ('user',)
+    list_filter = ('user', 'recipes',)
     empty_value_display = '-'
 
 

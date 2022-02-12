@@ -1,7 +1,6 @@
 import os
 
 from django.conf import settings
-from django.db import IntegrityError
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework.backends import DjangoFilterBackend
@@ -15,6 +14,10 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
 from foodgram.paginations import LimitPageSizePagination
 from users.permissions import IsAdminOrAuthorOrReadOnly
 from users.serializers import LiteRecipeSerializer
+
+from .constants import (FAVORITE_ADD_ERROR, FAVORITE_DELETE_ERROR,
+                        SHOPPING_CART_ADD_ERROR, SHOPPING_CART_DELETE_ERROR,
+                        SHOPPING_CART_GET_ERROR)
 from .filters import IngredientSearchFilter, RecipeFilter
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .pdfrender import render_pdf_view
@@ -48,34 +51,59 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        serializer = RecipeSerializer(
+            instance=serializer.instance,
+            context={'request': self.request}
+        )
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=HTTP_201_CREATED, headers=headers
         )
 
-    def add_to_favorite(self, request, recipe):
-        try:
-            Favorite.objects.create(user=request.user, favorite=recipe)
-        except IntegrityError:
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        serializer = RecipeSerializer(
+            instance=serializer.instance,
+            context={'request': self.request},
+        )
+        return Response(
+            serializer.data, status=HTTP_200_OK
+        )
+
+    def add_to(self, recipe, model, error):
+        if model.recipes.filter(pk__in=(recipe.pk,)).exists():
             return Response(
-                {'errors': 'Вы уже подписаны на данного автора'},
+                {'errors': error},
                 status=HTTP_400_BAD_REQUEST,
             )
+        model.recipes.add(recipe)
         serializer = LiteRecipeSerializer(recipe)
         return Response(
             serializer.data,
             status=HTTP_201_CREATED,
         )
 
-    def delete_from_favorite(self, request, recipe):
-        favorite = Favorite.objects.filter(user=request.user, favorite=recipe)
-        if not favorite.exists():
+    def delete_from(self, recipe, model, error):
+        if not model.recipes.filter(pk__in=(recipe.pk,)).exists():
             return Response(
-                {'errors': 'Данный автор не найден в подписках'},
+                {'errors': error},
                 status=HTTP_400_BAD_REQUEST,
             )
-        favorite.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+        model.recipes.remove(recipe)
+        return Response(
+            status=HTTP_204_NO_CONTENT,
+        )
 
     @action(
         methods=('post', 'delete',),
@@ -84,9 +112,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
+        favorite = (
+            Favorite.objects.get_or_create(user=request.user)[0]
+        )
         if request.method == 'POST':
-            return self.add_to_favorite(request, recipe)
-        return self.delete_from_favorite(request, recipe)
+            return self.add_to(
+                recipe=recipe,
+                model=favorite,
+                error=FAVORITE_ADD_ERROR,
+            )
+        return self.delete_from(
+            recipe=recipe,
+            model=favorite,
+            error=FAVORITE_DELETE_ERROR,
+        )
 
     def generate_shopping_ingredients(self, request, shopping_cart):
         return (
@@ -99,10 +138,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def download_shopping_cart(self, request):
         try:
-            shopping_cart = ShoppingCart.objects.get(user=request.user)
+            shopping_cart = ShoppingCart.objects.filter(user=request.user)
         except ShoppingCart.DoesNotExist:
             return Response(
-                {'errors': 'Данные о корзине не найдены'},
+                {'errors': SHOPPING_CART_GET_ERROR},
                 status=HTTP_400_BAD_REQUEST
             )
         context = {
@@ -112,30 +151,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         template_path = os.path.join(settings.TEMPLATES_DIR,
                                      'recipes/shopping_cart.html')
         return render_pdf_view(request, context, template_path)
-
-    def add_to_shopping_cart(self, request, recipe, shopping_cart):
-        if shopping_cart.recipes.filter(pk__in=(recipe.pk,)).exists():
-            return Response(
-                {'errors': 'Вы уже добавили данный рецепт в корзину'},
-                status=HTTP_400_BAD_REQUEST,
-            )
-        shopping_cart.recipes.add(recipe)
-        serializer = LiteRecipeSerializer(recipe)
-        return Response(
-            serializer.data,
-            status=HTTP_201_CREATED,
-        )
-
-    def delete_from_shopping_cart(self, request, recipe, shopping_cart):
-        if not shopping_cart.recipes.filter(pk__in=(recipe.pk,)).exists():
-            return Response(
-                {'errors': 'Рецепт не был найдет в корзине'},
-                status=HTTP_400_BAD_REQUEST,
-            )
-        shopping_cart.recipes.remove(recipe)
-        return Response(
-            status=HTTP_204_NO_CONTENT,
-        )
 
     @action(
         methods=('post', 'delete'),
@@ -148,5 +163,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ShoppingCart.objects.get_or_create(user=request.user)[0]
         )
         if request.method == 'POST':
-            return self.add_to_shopping_cart(request, recipe, shopping_cart)
-        return self.delete_from_shopping_cart(request, recipe, shopping_cart)
+            return self.add_to(
+                recipe=recipe,
+                model=shopping_cart,
+                error=SHOPPING_CART_ADD_ERROR,
+            )
+        return self.delete_from(
+            recipe=recipe,
+            model=shopping_cart,
+            error=SHOPPING_CART_DELETE_ERROR,
+        )

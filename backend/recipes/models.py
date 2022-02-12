@@ -150,27 +150,25 @@ class Recipe(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User,
+        verbose_name='Пользователь',
         related_name='favorites',
         on_delete=models.CASCADE,
     )
-    favorite = models.ForeignKey(
+    recipes = models.ManyToManyField(
         Recipe,
+        verbose_name='Рецепты',
         related_name='in_favorite',
-        on_delete=models.CASCADE,
     )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'favorite'],
-                name='Уникальная запись пользователь - избранное',
+                fields=['user'],
+                name='Уникальная запись избранное пользователя',
             )
         ]
-
-    def __str__(self):
-        return f'{self.user} - {self.favorite}'
 
 
 class ShoppingCart(models.Model):
