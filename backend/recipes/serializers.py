@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializer
-
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 
