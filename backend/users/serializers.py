@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
-from recipes.models import Recipe
 from rest_framework import serializers
+
+from recipes.models import Recipe
 
 from .models import Subscription
 
