@@ -30,17 +30,20 @@ class RecipeFilter(FilterSet):
         )
 
     def get_is_in_shopping_cart(self, queryset, name, value):
-        if not value:
-            return queryset
-        if not self.request.user.is_authenticated:
-            return queryset
-        if not ShoppingCart.objects.filter(user=self.request.user).exists():
-            return queryset
-        return queryset.filter(in_shopping_carts__user=self.request.user)
+        # if not value:
+        #     return queryset
+        # if not self.request.user.is_authenticated:
+        #     return queryset
+        # if not ShoppingCart.objects.filter(user=self.request.user).exists():
+        #     return queryset
+        # return queryset.filter(in_shopping_carts__user=self.request.user)
         # recipes = self.request.user.shopping_cart.recipes.all()
         # return queryset.filter(
         #     pk__in=(recipes.values_list('id', flat=True).get())
         # )
+        if value and not self.request.user.is_anonymous:
+            return queryset.filter(in_shopping_carts__user=self.request.user)
+        return queryset
 
 
 class IngredientSearchFilter(FilterSet):
