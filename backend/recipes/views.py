@@ -1,7 +1,8 @@
-import os
-
-from django.conf import settings
+# import os
+#
+# from django.conf import settings
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework.backends import DjangoFilterBackend
 from rest_framework import permissions, viewsets
@@ -126,9 +127,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'context': self.generate_shopping_ingredients(request,
                                                           shopping_cart)
         }
-        template_path = os.path.join(settings.TEMPLATES_DIR,
-                                     'recipes/shopping_cart.html')
-        return render_pdf_view(request, context, template_path)
+        # template_path = os.path.join(settings.TEMPLATES_DIR,
+        #                              'recipes/shopping_cart.html')
+        # return render_pdf_view(request, context, template_path)
+
+        response = HttpResponse(context, 'Content-Type: text/plain')
+        response['Content-Disposition'] = (
+            'attachment;' 'filename="shopping_cart.txt"'
+        )
+        return response
 
     @action(
         methods=('post', 'delete'),
