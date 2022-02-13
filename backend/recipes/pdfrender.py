@@ -8,14 +8,13 @@ from xhtml2pdf import pisa
 
 def link_callback(uri, rel):
     if uri.find(settings.MEDIA_URL) != -1:
-        path = os.path.join(settings.MEDIA_ROOT,
+        return os.path.join(settings.MEDIA_ROOT,
                             uri.replace(settings.MEDIA_URL, ''))
     elif uri.find(settings.STATIC_URL) != -1:
-        path = os.path.join(settings.STATIC_ROOT,
+        return os.path.join(settings.STATIC_ROOT,
                             uri.replace(settings.STATIC_URL, ''))
     else:
         return None
-    return path
 
 
 def render_pdf_view(request, context, path,):
