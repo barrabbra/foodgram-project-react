@@ -8,29 +8,14 @@ from xhtml2pdf import pisa
 
 
 def link_callback(uri, rel):
-    result = finders.find(uri)
-    if result:
-        if not isinstance(result, (list, tuple)):
-            result = [result]
-        result = list(os.path.realpath(path) for path in result)
-        path = result[0]
+    if uri.find(settings.MEDIA_URL) != -1:
+        path = os.path.join(settings.MEDIA_ROOT,
+                            uri.replace(settings.MEDIA_URL, ''))
+    elif uri.find(settings.STATIC_URL) != -1:
+        path = os.path.join(settings.STATIC_ROOT,
+                            uri.replace(settings.STATIC_URL, ''))
     else:
-        static_url = settings.STATIC_URL
-        static_root = settings.STATIC_ROOT
-        media_url = settings.MEDIA_URL
-        media_root = settings.MEDIA_ROOT
-
-        if uri.startswith(media_url):
-            path = os.path.join(media_root, uri.replace(media_url, ""))
-        elif uri.startswith(static_url):
-            path = os.path.join(static_root, uri.replace(static_url, ""))
-        else:
-            return uri
-
-    if not os.path.isfile(path):
-        raise Exception(
-            'media URI must start with %s or %s' % (static_url, media_url)
-        )
+        path = None
     return path
 
 
