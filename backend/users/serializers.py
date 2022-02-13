@@ -32,8 +32,8 @@ class UserSerializer(serializers.ModelSerializer):
         if not user.is_authenticated:
             return False
         return Subscription.objects.filter(
-            subscriber=obj,
-            subscription=user,
+            subscriber=user,
+            subscription=obj,
         ).exists()
 
     def create(self, validated_data):
