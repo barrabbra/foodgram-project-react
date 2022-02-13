@@ -72,7 +72,7 @@ class RecipeIngredient(models.Model):
         on_delete=models.SET_NULL,
         null=True,
     )
-    amount = models.IntegerField(
+    amount = models.PositiveIntegerField(
         verbose_name='Количество',
         help_text='Требуемое количество для рецепта (целое число)',
     )
