@@ -15,6 +15,7 @@ from users.serializers import SubscriptionSerializer
 class SubscriptionViewSet(UserViewSet):
     pagination_class = LimitPageSizePagination
     lookup_url_kwarg = 'user_id'
+    permission_classes = IsAuthenticated
 
     def get_subscribtion_serializer(self, *args, **kwargs):
         kwargs.setdefault('context', self.get_serializer_context())
