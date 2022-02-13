@@ -3,7 +3,7 @@ from django_filters.rest_framework import (AllValuesMultipleFilter,
                                            BooleanFilter, CharFilter,
                                            FilterSet)
 
-from .models import Favorite, Ingredient, Recipe, ShoppingCart
+from .models import Favorite, Ingredient, Recipe
 
 
 class RecipeFilter(FilterSet):
