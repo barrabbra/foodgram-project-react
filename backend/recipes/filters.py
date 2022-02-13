@@ -36,10 +36,11 @@ class RecipeFilter(FilterSet):
             return queryset
         if not ShoppingCart.objects.filter(user=self.request.user).exists():
             return queryset
-        recipes = self.request.user.shopping_cart.recipes.all()
-        return queryset.filter(
-            pk__in=(recipes.values_list('id', flat=True).get())
-        )
+        return queryset.filter(in_shopping_carts__user=self.request.user)
+        # recipes = self.request.user.shopping_cart.recipes.all()
+        # return queryset.filter(
+        #     pk__in=(recipes.values_list('id', flat=True).get())
+        # )
 
 
 class IngredientSearchFilter(FilterSet):
