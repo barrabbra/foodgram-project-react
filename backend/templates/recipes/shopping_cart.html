@@ -18,7 +18,7 @@
                 left: 50pt; width: 512pt; top: 772pt; height: 20pt;
             }
         }
-        @font-face { font-family: Arial; src: url(static_backend/fonts/arial.ttf); }
+        @font-face { font-family: Times-Roman }
         body{
             font-family: Arial, sans-serif;
         }
@@ -53,6 +53,7 @@
             {{  ingredient.recipes__ingredients__ingredient__name  }} - {{  ingredient.total  }} {{  ingredient.recipes__ingredients__ingredient__measurement_unit  }}
             </li>
         {% endfor %}
+        <a>{ url(static_backend/fonts/arial.ttf) }</a>
     </ol>
 </body>
 </html>
