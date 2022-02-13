@@ -19,7 +19,7 @@ from recipes.constants import (FAVORITE_ADD_ERROR, FAVORITE_DELETE_ERROR,
                                SHOPPING_CART_GET_ERROR)
 from recipes.filters import IngredientSearchFilter, RecipeFilter
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from recipes.pdfrender import render_pdf_view
+# from recipes.pdfrender import render_pdf_view
 from recipes.serializers import (CreateRecipeSerializer, IngredientSerializer,
                                  RecipeSerializer, TagSerializer)
 from users.permissions import IsAdminOrAuthorOrReadOnly
