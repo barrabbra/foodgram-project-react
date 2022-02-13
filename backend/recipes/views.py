@@ -1,8 +1,7 @@
-# import os
-#
-# from django.conf import settings
+import os
+
+from django.conf import settings
 from django.db.models import Sum
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework.backends import DjangoFilterBackend
 from rest_framework import permissions, viewsets
@@ -19,7 +18,7 @@ from recipes.constants import (FAVORITE_ADD_ERROR, FAVORITE_DELETE_ERROR,
                                SHOPPING_CART_GET_ERROR)
 from recipes.filters import IngredientSearchFilter, RecipeFilter
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-# from recipes.pdfrender import render_pdf_view
+from recipes.pdfrender import render_pdf_view
 from recipes.serializers import (CreateRecipeSerializer, IngredientSerializer,
                                  RecipeSerializer, TagSerializer)
 from users.permissions import IsAdminOrAuthorOrReadOnly
@@ -127,15 +126,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'context': self.generate_shopping_ingredients(request,
                                                           shopping_cart)
         }
-        # template_path = os.path.join(settings.TEMPLATES_DIR,
-        #                              'recipes/shopping_cart.html')
-        # return render_pdf_view(request, context, template_path)
-
-        response = HttpResponse(context, 'Content-Type: text/plain')
-        response['Content-Disposition'] = (
-            'attachment;' 'filename="shopping_cart.txt"'
-        )
-        return response
+        template_path = os.path.join(settings.TEMPLATES_DIR,
+                                     'recipes/shopping_cart.html')
+        return render_pdf_view(request, context, template_path)
 
     @action(
         methods=('post', 'delete'),
