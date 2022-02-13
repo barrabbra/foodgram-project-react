@@ -32,7 +32,7 @@ ALLOWED_HOSTS=(через запятую без пробелов указать 
 ### Установка проекта на сервер
 1. Скопируйте файлы из папки `/infra/` на ваш сервер и `.env` файл из директории `/backend/`:
 ```bash
-scp -r data/ <username>@<server_ip>:/home/<username>/
+scp -r infra/ <username>@<server_ip>:/home/<username>/
 scp backend/.env <username>@<server_ip>:/home/<username>/
 ```
 2. Зайдите на сервер и измените `server_name` в конфиге nginx на ваше доменное имя:
