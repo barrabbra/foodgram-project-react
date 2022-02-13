@@ -31,9 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         # if not user.is_authenticated:
         #     return False
-        return user.subscriptions.subscription.filter(
-            pk__in=(obj.pk,)
-        ).exists()
+        # return user.subscriptions.subscription.filter(
+        #     pk__in=(obj.pk,)
+        # ).exists()
+        return True
 
     def create(self, validated_data):
         validated_data['password'] = (
