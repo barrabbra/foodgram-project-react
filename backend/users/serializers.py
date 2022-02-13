@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -28,13 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def get_is_subscribed(self, obj):
-        # user = self.context['request'].user
-        # if not user.is_authenticated:
-        #     return False
-        # return user.subscriptions.subscription.filter(
-        #     pk__in=(obj.pk,)
-        # ).exists()
-        return True
+        user = self.context['request'].user
+        if not user.is_authenticated:
+            return False
+        return user.subscriptions.subscription.filter(
+            pk__in=(obj.pk,)
+        ).exists()
 
     def create(self, validated_data):
         validated_data['password'] = (
@@ -92,12 +91,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_subscribed(self, obj):
-        # user = self.context['request'].user
-        # return (
-        #     user.is_authenticated
-        #     and obj.subscribers.filter(subscriber=user).exists()
-        # )
-        return True
+        user = self.context['request'].user
+        return (
+            user.is_authenticated
+            and obj.subscribers.filter(subscriber=user).exists()
+        )
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
