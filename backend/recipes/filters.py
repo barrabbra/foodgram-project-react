@@ -26,7 +26,7 @@ class RecipeFilter(FilterSet):
             return queryset
         recipes = self.request.user.favorites.recipes.all()
         return queryset.filter(
-            pk__in=(recipes.values_list('id', flat=True,))
+            pk__in=(recipes.values_list('id', flat=True,).get())
         )
 
     def get_is_in_shopping_cart(self, queryset, name, value):
@@ -38,7 +38,7 @@ class RecipeFilter(FilterSet):
             return queryset
         recipes = self.request.user.shopping_cart.recipes.all()
         return queryset.filter(
-            pk__in=(recipes.values_list('id', flat=True))
+            pk__in=(recipes.values_list('id', flat=True).get())
         )
 
 
